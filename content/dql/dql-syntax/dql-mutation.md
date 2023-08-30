@@ -204,6 +204,27 @@ To get the latest result, you have to execute another query after the transactio
 
 Variables defined in the query block can be used in the mutation blocks using the [uid]({{< relref "uid-upsert.md" >}}) and [val]({{< relref "val-upsert.md" >}}) functions.
 
+### delete all typed data conforming to the DQL schema
+A particularly useful upsert in DQL will delete all known predicates for all entities, for those entities that include a dgraph.type as a predicate. By "known predicates" we mean the predicates defined in the DQL schema. Predicates not defined in the schema, and entities without a DQL type will not be deleted. The cloud GUI dropp all button on the schema page, or the admin dropData mutation may be used in that case.
+
+```
+upsert {
+  query {
+    find_uids(func: has(dgraph.type)) {
+      u as uid
+    }
+  }
+  
+  mutation {
+    delete {
+      uid(u) * * .
+    }
+  }
+}
+```
+Note this executes as a Dgraph Transaction, so will not work for extremely large databases, and other techniques may be faster.
+
+
 ## conditional upsert
 The upsert block also allows specifying conditional mutation blocks using an `@if`
 directive. The mutation is executed only when the specified condition is true. If the
